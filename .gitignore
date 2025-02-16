@@ -4,6 +4,7 @@ __pycache__/
 
 # Poetry virtual environment (if created in-project)
 .venv/
+.pytest_cache
 
 # Distribution / build artifacts
 build/
