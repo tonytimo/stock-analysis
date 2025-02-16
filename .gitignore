@@ -1,0 +1,19 @@
+# Byte-compiled or optimized files
+__pycache__/
+*.py[cod]
+
+# Poetry virtual environment (if created in-project)
+.venv/
+
+# Distribution / build artifacts
+build/
+dist/
+*.egg-info/
+
+# OS or editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Environment variable files
+.env
