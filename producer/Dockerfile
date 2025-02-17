@@ -2,7 +2,7 @@
 FROM python:3.10-slim
 
 # Install Poetry
-RUN pip install --no-cache-dir poetry
+RUN pip install --no-cache-dir poetry==1.8.4
 
 # Switch working directory
 WORKDIR /app
@@ -15,8 +15,11 @@ RUN poetry export --without-hashes --format=requirements.txt > requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of your application code (e.g., producer.py)
-COPY producer.py .
+COPY producer/producer.py ./producer/producer.py
+COPY helper.py .
+
+ENV PYTHONPATH=/app
 
 # Run the producer.py script
-CMD ["python", "producer.py"]
+CMD ["python", "producer/producer.py"]
 

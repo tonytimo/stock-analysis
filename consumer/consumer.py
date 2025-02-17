@@ -2,6 +2,7 @@
 This module consumes stock prices from the Kafka topic "stock_prices"
 """
 
+import time
 import os
 import json
 from kafka import KafkaConsumer, KafkaProducer
@@ -13,7 +14,8 @@ def consume_data() -> None:
     produces alerts to the Kafka topic "stock_alerts" when a stock price is 5%
     below the average of the last 5 prices we consumed.
     """
-    kafka_server = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+    time.sleep(10)  # wait for Kafka to start
+    kafka_server = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
     consumer = KafkaConsumer(
         "stock_prices",
         bootstrap_servers=kafka_server,

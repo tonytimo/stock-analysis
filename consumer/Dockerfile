@@ -2,7 +2,7 @@
 FROM python:3.10-slim
 
 # Install Poetry
-RUN pip install --no-cache-dir poetry
+RUN pip install --no-cache-dir poetry==1.8.4
 
 # Switch working directory
 WORKDIR /app
@@ -15,7 +15,7 @@ RUN poetry export --without-hashes --format=requirements.txt > requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of your application code (e.g., consumer.py)
-COPY consumer.py .
+COPY consumer/consumer.py .
 
 # Run the consumer.py script
 CMD ["python", "consumer.py"]

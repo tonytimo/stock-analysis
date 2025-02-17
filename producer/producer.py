@@ -59,8 +59,8 @@ def produce_data() -> None:
     Continuously fetches stock data for a list of symbols
     and sends it to a Kafka topic.
     """
-
-    kafka_server = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+    time.sleep(10)  # wait for Kafka to start
+    kafka_server = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
     producer = KafkaProducer(
         bootstrap_servers=kafka_server,
         value_serializer=lambda v: json.dumps(v).encode("utf-8"),
