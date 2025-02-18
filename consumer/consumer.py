@@ -6,6 +6,7 @@ import time
 import os
 import json
 from kafka import KafkaConsumer, KafkaProducer
+from kafka.errors import KafkaError, KafkaTimeoutError
 
 
 def consume_data() -> None:
@@ -16,18 +17,37 @@ def consume_data() -> None:
     """
     time.sleep(10)  # wait for Kafka to start
     kafka_server = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
-    consumer = KafkaConsumer(
-        "stock_prices",
-        bootstrap_servers=kafka_server,
-        auto_offset_reset="earliest",
-        group_id="stock_consumers",
-        value_deserializer=lambda v: json.loads(v.decode("utf-8")),
-    )
 
-    producer = KafkaProducer(
-        bootstrap_servers=kafka_server,
-        value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-    )
+    try:
+        consumer = KafkaConsumer(
+            "stock_prices",
+            bootstrap_servers=kafka_server,
+            auto_offset_reset="earliest",
+            group_id="stock_consumers",
+            value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+        )
+        print(f"KafkaConsumer created successfully. Connected to {kafka_server}")
+
+    except KafkaError as ke:
+        print(f"Error creating KafkaConsumer: {ke}")
+        return
+    except Exception as e:
+        print(f"Unexpected error creating KafkaConsumer: {e}")
+        return
+
+    try:
+        producer = KafkaProducer(
+            bootstrap_servers=kafka_server,
+            value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+        )
+        print(f"KafkaProducer created successfully. Connected to {kafka_server}")
+
+    except KafkaError as ke:
+        print(f"Error creating KafkaProducer: {ke}")
+        return
+    except Exception as e:
+        print(f"Unexpected error creating KafkaProducer: {e}")
+        return
 
     recent_prices = {}
 
@@ -35,8 +55,12 @@ def consume_data() -> None:
         for message in consumer:
             stock_data = message.value
             symbol = stock_data.get("symbol")
-            price = stock_data.get("price", 0.0)
+            price = stock_data.get("price")
             timestamp = stock_data.get("timestamp")
+
+        if symbol is None or price is None:
+            print("Invalid stock data received.")
+            continue
 
         if symbol not in recent_prices:
             recent_prices[symbol] = []
@@ -55,8 +79,16 @@ def consume_data() -> None:
                 "massage": f"Price {price} is 5% below avg {avg_price:.2f}",
                 "timestamp": timestamp,
             }
-            producer.send("stock_alerts", value=alert_data)
-            print(f"ALERT SENT: {alert_data}")
+            try:
+                producer.send("stock_alerts", value=alert_data)
+                print(f"ALERT SENT: {alert_data}")
+
+            except KafkaTimeoutError as kte:
+                print(f"Kafka timeout error while sending data: {kte}")
+            except KafkaError as ke:
+                print(f"Kafka error while sending data: {ke}")
+            except Exception as e:
+                print(f"Unexpected error sending message to Kafka: {e}")
 
 
 if __name__ == "__main__":

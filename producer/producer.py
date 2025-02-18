@@ -17,7 +17,7 @@ from helper import get_api_key
 def get_stock_data(api_key: str) -> list[dict[str, Any]]:
     """
     Args:
-        api_key (str): The API key for accessing the  Tingo API.
+        api_key (str): The API key for accessing the Tingo API.
     Returns:
         list[dict[str, Any]] : A list of dictionaries containing the stock data,
                                including symbol, price and timestamp.
@@ -48,7 +48,6 @@ def get_stock_data(api_key: str) -> list[dict[str, Any]]:
 
     try:
         data = r.json()
-
     except json.JSONDecodeError as jde:
         print(f"Error parsing JSON: {jde}")
         return []
