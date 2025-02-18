@@ -1,14 +1,6 @@
 """
-This module fetches stock data from the Alpha Vantage API 
+This module fetches stock data from the Tingo API 
 and produces it to a Kafka topic.
-
-Functions:
-    get_stock_data(symbol: str, api_key: str) -> dict[str, Any] | None:
-        Fetches stock data for a given symbol from the Alpha Vantage API.
-
-    produce_data() -> None:
-        Continuously fetches stock data for a list of symbols 
-        and sends it to a Kafka topic.
 """
 
 import os
@@ -16,69 +8,115 @@ import time
 import json
 from typing import Any
 import requests
+from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
+from kafka.errors import KafkaError, KafkaTimeoutError
 from kafka import KafkaProducer
 from helper import get_api_key
 
 
-# TODO: Add better error handling
-
-
-def get_stock_data(symbol: str, api_key: str) -> dict[str, Any] | None:
+def get_stock_data(api_key: str) -> list[dict[str, Any]]:
     """
     Args:
-        symbol (str): The stock symbol to fetch data for.
-        api_key (str): The API key for accessing the Alpha Vantage API.
+        api_key (str): The API key for accessing the  Tingo API.
     Returns:
-        dict[str, Any] | None: A dictionary containing the stock data,
-                            including symbol, price, volume, and timestamp.
-                            Returns None if there is an error during the request.
+        list[dict[str, Any]] : A list of dictionaries containing the stock data,
+                               including symbol, price and timestamp.
+                               Returns empty list if there is an error during the request.
     """
+
+    # Requesting stock data for multiple symbols
+    symbols = "aapl,googl,tsla,amzn,msft"
+    headers = {"Content-Type": "application/json"}
+    url = f"https://api.tiingo.com/iex/?tickers={symbols}&token={api_key}"
+
     try:
-        # Requesting stock data
-        url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={api_key}"
-        r = requests.get(url, timeout=10)
+        r = requests.get(url, headers, timeout=10)
+        r.raise_for_status()
+    except HTTPError as errh:
+        print(f"HTTP Error Occurred: {errh}")
+        return []
+    except ConnectionError as errc:
+        print(f"Error Connecting: {errc}")
+        return []
+    except Timeout as errt:
+        print(f"Request Timed Out: {errt}")
+        return []
+    except RequestException as err:
+        # Catches all other request-related errors
+        print(f"Request failed: {err}")
+        return []
+
+    try:
         data = r.json()
 
-        # The API returns a nested JSON, extract price info
-        global_quote = data.get("Global Quote", {})
+    except json.JSONDecodeError as jde:
+        print(f"Error parsing JSON: {jde}")
+        return []
+
+    # Validate structure and build the results
+    if not isinstance(data, list):
+        print(f"Unexpected data format (expected list): {data}")
+        return []
+
+    # make a list of dictionaries with the required data
+    # if the data is not found return None
+    new_list = []
+    for item in data:
         new_dict = {
-            "symbol": global_quote.get("01. symbol", symbol),
-            "price": float(global_quote.get("05. price", 0.0)),
-            "volume": int(global_quote.get("06. volume", 0)),
-            "timestamp": global_quote.get("07. latest trading day", ""),
+            "symbol": item.get("ticker", None),
+            "price": item.get("tngoLast", None),
+            "timestamp": item.get("timestamp", None),
         }
+        new_list.append(new_dict)
 
-        return new_dict
-
-    except Exception as e:
-        print(f"error is: {e}")
+    return new_list
 
 
 def produce_data() -> None:
     """
-    Continuously fetches stock data for a list of symbols
-    and sends it to a Kafka topic.
+    Continuously fetches stock data and sends it to a Kafka topic.
     """
     time.sleep(10)  # wait for Kafka to start
     kafka_server = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
-    producer = KafkaProducer(
-        bootstrap_servers=kafka_server,
-        value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-    )
 
-    symbols = ["AAPL", "GOOGL", "TSLA", "AMZN", "MSFT"]
     try:
-        api_key = get_api_key("ALPHA_VANTAGE_API_KEY")
+        producer = KafkaProducer(
+            bootstrap_servers=kafka_server,
+            value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+        )
+        print(f"KafkaProducer created successfully. Connected to {kafka_server}")
+
+    except KafkaError as ke:
+        print(f"Error creating KafkaProducer: {ke}")
+        return
+    except Exception as e:
+        print(f"Unexpected error creating KafkaProducer: {e}")
+        return
+
+    try:
+        api_key = get_api_key("TINGO_API_KEY")
     except Exception as e:
         print(f"Error fetching API key: {e}")
         return
 
     while True:
-        for sym in symbols:
-            stock_info = get_stock_data(sym, api_key=api_key)
-            producer.send("stock_prices", stock_info)
-            print(f"Produced: {stock_info}")
-            time.sleep(3)  # pace the requests to avoid rate limits
+        stock_info = get_stock_data(api_key=api_key)
+        if not stock_info:
+            print("No stock data found.")
+            time.sleep(90)
+            continue
+        try:
+            for stock in stock_info:
+                producer.send("stock_prices", stock)
+                print(f"Produced: {stock}")
+        except KafkaTimeoutError as kte:
+            print(f"Kafka timeout error while sending data: {kte}")
+        except KafkaError as ke:
+            print(f"Kafka error while sending data: {ke}")
+        except Exception as e:
+            print(f"Unexpected error sending message to Kafka: {e}")
+
+        time.sleep(90)  # pace the requests to avoid rate limits 1000 requests/day
 
 
 if __name__ == "__main__":
