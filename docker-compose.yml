@@ -34,7 +34,7 @@ services:
       - kafka
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
+      - TINGO_API_KEY=${TINGO_API_KEY}
 
   consumer:
     build:
@@ -49,7 +49,9 @@ services:
       - stock_data:/data
 
   webapp:
-    build: ./webapp
+    build: 
+      context: .
+      dockerfile: ./webapp/Dockerfile
     container_name: webapp
     depends_on:
       - consumer

@@ -15,7 +15,9 @@ RUN poetry export --without-hashes --format=requirements.txt > requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app.py to the working directory
-COPY webapp/app.py /app
+COPY webapp/app.py .
+COPY webapp/templates templates
+COPY consumer/db_manager.py consumer/db_manager.py
 
 # Expose port 5000
 EXPOSE 5000
