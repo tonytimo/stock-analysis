@@ -8,10 +8,10 @@ import time
 import json
 from typing import Any
 import requests
-from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
-from kafka.errors import KafkaError, KafkaTimeoutError
 from kafka import KafkaProducer
 from helper import get_api_key
+from kafka.errors import KafkaError, KafkaTimeoutError
+from requests.exceptions import HTTPError, ConnectionError, Timeout
 
 
 def get_stock_data(api_key: str) -> list[dict[str, Any]]:
