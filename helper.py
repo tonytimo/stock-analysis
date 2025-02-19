@@ -1,5 +1,9 @@
-from dotenv import load_dotenv, find_dotenv
+"""
+Helper functions for the project.
+"""
+
 import os
+from dotenv import load_dotenv, find_dotenv
 
 
 def get_api_key(key_name: str) -> str:

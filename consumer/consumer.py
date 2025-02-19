@@ -83,9 +83,7 @@ def consume_data() -> None:
                 producer.send("stock_alerts", value=alert_data)
                 print(f"ALERT SENT: {alert_data}")
 
-            except KafkaTimeoutError as kte:
-                print(f"Kafka timeout error while sending data: {kte}")
-            except KafkaError as ke:
+            except (KafkaError, KafkaTimeoutError) as ke:
                 print(f"Kafka error while sending data: {ke}")
             except Exception as e:
                 print(f"Unexpected error sending message to Kafka: {e}")

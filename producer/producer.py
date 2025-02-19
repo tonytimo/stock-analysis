@@ -32,24 +32,10 @@ def get_stock_data(api_key: str) -> list[dict[str, Any]]:
     try:
         r = requests.get(url, headers, timeout=10)
         r.raise_for_status()
-    except HTTPError as errh:
-        print(f"HTTP Error Occurred: {errh}")
-        return []
-    except ConnectionError as errc:
-        print(f"Error Connecting: {errc}")
-        return []
-    except Timeout as errt:
-        print(f"Request Timed Out: {errt}")
-        return []
-    except RequestException as err:
-        # Catches all other request-related errors
-        print(f"Request failed: {err}")
-        return []
-
-    try:
         data = r.json()
-    except json.JSONDecodeError as jde:
-        print(f"Error parsing JSON: {jde}")
+
+    except (HTTPError, ConnectionError, Timeout, json.JSONDecodeError) as e:
+        print("Request failed: %s", e)
         return []
 
     # Validate structure and build the results
@@ -108,9 +94,7 @@ def produce_data() -> None:
             for stock in stock_info:
                 producer.send("stock_prices", stock)
                 print(f"Produced: {stock}")
-        except KafkaTimeoutError as kte:
-            print(f"Kafka timeout error while sending data: {kte}")
-        except KafkaError as ke:
+        except (KafkaError, KafkaTimeoutError) as ke:
             print(f"Kafka error while sending data: {ke}")
         except Exception as e:
             print(f"Unexpected error sending message to Kafka: {e}")
