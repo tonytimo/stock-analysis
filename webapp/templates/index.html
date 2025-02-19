@@ -93,8 +93,33 @@
 
         // initial fetch
         refreshCharts();
-        // poll every 5 seconds
-        setInterval(refreshCharts, 5000);
+        // poll every 95 seconds
+        setInterval(refreshCharts, 95000);
+
+        let lastAlertId = null;
+
+        async function checkForNewAlert() {
+            try {
+                const response = await fetch('/api/latest-alert');
+                const data = await response.json();
+
+                if (!data || !data.id) {
+                    // No alerts found or response is empty
+                    return;
+                }
+
+                // If the ID is different from the last we saw, it's a new alert
+                if (data.id !== lastAlertId) {
+                    lastAlertId = data.id;
+                    alert(`New Stock Alert for ${data.symbol}: ${data.message}`);
+                }
+            } catch (error) {
+                console.error("Error fetching alert:", error);
+            }
+        }
+
+        // Check every 95 seconds
+        setInterval(checkForNewAlert, 95000);
     </script>
 </body>
 

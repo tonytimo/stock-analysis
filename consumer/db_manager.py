@@ -40,7 +40,7 @@ class StockAlert(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     symbol: Mapped[str] = mapped_column(String(10))
-    massage: Mapped[str] = mapped_column(String(100))
+    message: Mapped[str] = mapped_column(String(100))
     timestamp: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
     )
@@ -90,7 +90,7 @@ def insert_stock_alert(symbol: str, msg: str, ts=None) -> None:
 
     # Use a context manager for the session
     with SessionLocal() as db:
-        record = StockPrice(symbol=symbol, massege=msg, timestamp=ts)
+        record = StockPrice(symbol=symbol, message=msg, timestamp=ts)
         db.add(record)
         db.commit()
 

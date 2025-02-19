@@ -3,7 +3,7 @@ This module contains the Flask app that serves the web interface.
 """
 
 from flask import Flask, Response, jsonify, render_template
-from consumer.db_manager import init_db, get_recent_stock_prices
+from consumer.db_manager import get_last_stock_alert, init_db, get_recent_stock_prices
 
 app = Flask(__name__)
 
@@ -31,6 +31,25 @@ def api_stocks() -> Response:
             data[r.symbol] = []
         data[r.symbol].append({"price": r.price, "timestamp": r.timestamp.isoformat()})
     return jsonify(data)
+
+
+@app.route("/api/latest-alert")
+def latest_alert() -> Response:
+    """
+    Returns the most recent alert in JSON format.
+    If no alert exists, returns an empty object {}.
+    """
+    alert = get_last_stock_alert()
+    if alert is None:
+        return jsonify({})  # no alerts yet
+    return jsonify(
+        {
+            "id": alert.id,
+            "symbol": alert.symbol,
+            "message": alert.message,
+            "timestamp": alert.timestamp.isoformat(),
+        }
+    )
 
 
 if __name__ == "__main__":
