@@ -3,6 +3,7 @@ This module contains the database manager functions.
 """
 
 import datetime
+from typing import List
 from sqlalchemy import create_engine, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, Mapped, mapped_column
 
@@ -30,7 +31,7 @@ class StockPrice(Base):
     )
 
 
-def init_db():
+def init_db() -> None:
     """Create the table if it doesn't exist."""
     Base.metadata.create_all(bind=engine)
 
@@ -49,7 +50,7 @@ def insert_stock_price(symbol: str, price: float, ts=None) -> None:
         db.commit()
 
 
-def get_recent_stock_prices(limit: int = 100):
+def get_recent_stock_prices(limit: int = 100) -> List[StockPrice]:
     """
     Retrieve the most recent records (sorted by timestamp desc).
     Return them as a list of StockPrice objects.

@@ -16,6 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of your application code (e.g., consumer.py)
 COPY consumer/consumer.py .
+COPY consumer/db_manager.py .
 
 # Run the consumer.py script
 CMD ["python", "consumer.py"]

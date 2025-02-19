@@ -7,6 +7,7 @@ import os
 import json
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import KafkaError, KafkaTimeoutError
+from db_manager import init_db, insert_stock_price
 
 
 def consume_data() -> None:
@@ -49,6 +50,10 @@ def consume_data() -> None:
         print(f"Unexpected error creating KafkaProducer: {e}")
         return
 
+    # Initialize DB (create table if it doesn't exist)
+    init_db()
+    print("Consumer is ready and DB initialized...")
+
     recent_prices = {}
 
     while True:
@@ -65,6 +70,10 @@ def consume_data() -> None:
         if symbol not in recent_prices:
             recent_prices[symbol] = []
         recent_prices[symbol].append(price)
+
+        # Insert record
+        insert_stock_price(symbol, price, timestamp)
+        print(f"Inserted: {symbol}, {price}, {timestamp}")
 
         if len(recent_prices[symbol]) > 5:
             recent_prices[symbol].pop(0)
