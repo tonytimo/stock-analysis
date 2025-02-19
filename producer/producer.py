@@ -9,9 +9,9 @@ import json
 from typing import Any
 import requests
 from kafka import KafkaProducer
-from helper import get_api_key
 from kafka.errors import KafkaError, KafkaTimeoutError
 from requests.exceptions import HTTPError, ConnectionError, Timeout
+from helper import get_api_key
 
 
 def get_stock_data(api_key: str) -> list[dict[str, Any]]:

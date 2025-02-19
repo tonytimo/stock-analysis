@@ -1,4 +1,7 @@
 version: "3.8"
+
+volumes:
+  stock_data:  # For our SQLite .db file
 services:
   zookeeper:
     image: bitnami/zookeeper:latest
@@ -42,3 +45,15 @@ services:
       - kafka
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    volumes:
+      - stock_data:/data
+
+  webapp:
+    build: ./webapp
+    container_name: webapp
+    depends_on:
+      - consumer
+    ports:
+      - "5000:5000"
+    volumes:
+      - stock_data:/data
