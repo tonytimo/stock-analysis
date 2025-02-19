@@ -1,0 +1,101 @@
+<!-- webapp/templates/index.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Real-Time Stock Prices</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1>Real-Time Stock Prices</h1>
+    <div id="charts-container"></div>
+
+    <script>
+        async function fetchStockData() {
+            const response = await fetch('/api/stocks');
+            return response.json();
+        }
+
+        // We'll store Chart.js instances keyed by symbol
+        const charts = {};
+
+        function createChart(symbol) {
+            const container = document.getElementById('charts-container');
+            const canvas = document.createElement('canvas');
+            canvas.id = `chart-${symbol}`;
+            container.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: symbol,
+                        data: [],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                parser: 'YYYY-MM-DDTHH:mm:ss',
+                                tooltipFormat: 'HH:mm:ss',
+                                displayFormats: {
+                                    minute: 'HH:mm:ss'
+                                }
+                            },
+                            title: { display: true, text: 'Timestamp' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Price (USD)' }
+                        }
+                    }
+                }
+            });
+            charts[symbol] = chart;
+        }
+
+        function updateChart(symbol, dataPoints) {
+            const chart = charts[symbol];
+            if (!chart) return;
+
+            // Reset chart data
+            chart.data.labels = [];
+            chart.data.datasets[0].data = [];
+
+            // Sort by timestamp ascending
+            dataPoints.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            dataPoints.forEach(pt => {
+                chart.data.labels.push(pt.timestamp);
+                chart.data.datasets[0].data.push(pt.price);
+            });
+
+            chart.update();
+        }
+
+        async function refreshCharts() {
+            const stockData = await fetchStockData();
+            // stockData = { AAPL: [{price, timestamp}, ...], GOOGL: [...], ...}
+            Object.keys(stockData).forEach(symbol => {
+                if (!charts[symbol]) {
+                    createChart(symbol);
+                }
+                updateChart(symbol, stockData[symbol]);
+            });
+        }
+
+        // initial fetch
+        refreshCharts();
+        // poll every 5 seconds
+        setInterval(refreshCharts, 5000);
+    </script>
+</body>
+
+</html>
