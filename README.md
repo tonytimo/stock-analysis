@@ -30,10 +30,10 @@ The application is composed of the following services:
 2.  **Set up environment variables:**
 
     -   Create a .env file in the root directory.
-    -   Add your Tingo API key to the .env file:
+    -   Add your [Tiingo API](https://www.tiingo.com/) key to the .env file:
 
         ```
-        TINGO_API_KEY=<your_tingo_api_key>
+        TIINGO_API_KEY=<your_tiingo_api_key>
         ```
 3.  **Install requirements with poetry**
 

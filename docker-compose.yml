@@ -34,7 +34,7 @@ services:
       - kafka
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - TINGO_API_KEY=${TINGO_API_KEY}
+      - TIINGO_API_KEY=${TIINGO_API_KEY}
 
   consumer:
     build:

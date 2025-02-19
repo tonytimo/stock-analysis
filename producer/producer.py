@@ -1,5 +1,5 @@
 """
-This module fetches stock data from the Tingo API 
+This module fetches stock data from the Tiingo API 
 and produces it to a Kafka topic.
 """
 
@@ -17,7 +17,7 @@ from helper import get_api_key
 def get_stock_data(api_key: str) -> list[dict[str, Any]]:
     """
     Args:
-        api_key (str): The API key for accessing the Tingo API.
+        api_key (str): The API key for accessing the Tiingo API.
     Returns:
         list[dict[str, Any]] : A list of dictionaries containing the stock data,
                                including symbol, price and timestamp.
@@ -79,7 +79,7 @@ def produce_data() -> None:
         return
 
     try:
-        api_key = get_api_key("TINGO_API_KEY")
+        api_key = get_api_key("TIINGO_API_KEY")
     except Exception as e:
         print(f"Error fetching API key: {e}")
         return
