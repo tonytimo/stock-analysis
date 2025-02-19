@@ -31,6 +31,21 @@ class StockPrice(Base):
     )
 
 
+class StockAlert(Base):
+    """
+    A class to represent the stock_prices table.
+    """
+
+    __tablename__ = "stock_alerts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    symbol: Mapped[str] = mapped_column(String(10))
+    massage: Mapped[str] = mapped_column(String(100))
+    timestamp: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow
+    )
+
+
 def init_db() -> None:
     """Create the table if it doesn't exist."""
     Base.metadata.create_all(bind=engine)
@@ -63,4 +78,28 @@ def get_recent_stock_prices(limit: int = 100) -> List[StockPrice]:
             .all()
         )
 
+        return results
+
+
+def insert_stock_alert(symbol: str, msg: str, ts=None) -> None:
+    """
+    Insert a single stock price record into the database.
+    """
+    if ts is None:
+        ts = datetime.datetime.utcnow()
+
+    # Use a context manager for the session
+    with SessionLocal() as db:
+        record = StockPrice(symbol=symbol, massege=msg, timestamp=ts)
+        db.add(record)
+        db.commit()
+
+
+def get_last_stock_alert() -> StockAlert:
+    """
+    Retrieve the most recent record of stock alert.
+    Return it as a StockAlert object.
+    """
+    with SessionLocal() as db:
+        results = db.query(StockAlert).order_by(StockAlert.timestamp.desc()).first()
         return results

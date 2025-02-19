@@ -7,7 +7,7 @@ import os
 import json
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import KafkaError, KafkaTimeoutError
-from db_manager import init_db, insert_stock_price
+from db_manager import init_db, insert_stock_alert, insert_stock_price
 
 
 def consume_data() -> None:
@@ -96,6 +96,10 @@ def consume_data() -> None:
                 print(f"Kafka error while sending data: {ke}")
             except Exception as e:
                 print(f"Unexpected error sending message to Kafka: {e}")
+
+            # Insert record
+            insert_stock_alert(symbol, price, timestamp)
+            print(f"Inserted: {symbol}, {price}, {timestamp}")
 
 
 if __name__ == "__main__":
