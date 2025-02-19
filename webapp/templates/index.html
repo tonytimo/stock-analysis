@@ -5,8 +5,8 @@
 <head>
     <title>Real-Time Stock Prices</title>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
 </head>
 
 <body>
@@ -46,26 +46,28 @@
                         x: {
                             type: 'time',
                             time: {
-                                parser: 'YYYY-MM-DDTHH:mm:ss',
                                 tooltipFormat: 'HH:mm:ss',
                                 displayFormats: {
                                     minute: 'HH:mm:ss'
                                 }
                             },
-                            title: { display: true, text: 'Timestamp' }
+                            title: { display: true, text: 'Timestamp' },
                         },
-                        y: {
-                            title: { display: true, text: 'Price (USD)' }
-                        }
+                    },
+                    y: {
+                        title: { display: true, text: 'Price (USD)' }
                     }
                 }
-            });
+            }
+            );
             charts[symbol] = chart;
         }
 
         function updateChart(symbol, dataPoints) {
             const chart = charts[symbol];
             if (!chart) return;
+
+            console.log("Data for", symbol, dataPoints);
 
             // Reset chart data
             chart.data.labels = [];
