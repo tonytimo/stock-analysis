@@ -90,7 +90,7 @@ def insert_stock_alert(symbol: str, msg: str, ts=None) -> None:
 
     # Use a context manager for the session
     with SessionLocal() as db:
-        record = StockPrice(symbol=symbol, message=msg, timestamp=ts)
+        record = StockAlert(symbol=symbol, message=msg, timestamp=ts)
         db.add(record)
         db.commit()
 

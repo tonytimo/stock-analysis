@@ -12,8 +12,13 @@ python-dotenv = "^1.0.1"
 requests = "^2.32.3"
 sqlalchemy = "^2.0.38"
 flask = "^3.1.0"
+pytest = "^8.3.4"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
