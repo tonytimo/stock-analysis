@@ -13,11 +13,12 @@ from consumer.db_manager import init_db, insert_stock_alert, insert_stock_price
 
 def consume_data() -> None:
     """
-    This function will consumes stock prices from the Kafka topic "stock_prices" and
-    produces alerts to the Kafka topic "stock_alerts" when a stock price is 5%
+    This function will consumes stock prices from the Kafka topic
+    "stock_prices" and produces alerts to the Kafka topic
+    "stock_alerts" when a stock price is 5%
     below the average of the last 5 prices we consumed.
     """
-    time.sleep(10)  # wait for Kafka to start
+    time.sleep(10)  # wait for Kafka to star
     kafka_server = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
 
     try:
@@ -28,7 +29,7 @@ def consume_data() -> None:
             group_id="stock_consumers",
             value_deserializer=lambda v: json.loads(v.decode("utf-8")),
         )
-        print(f"KafkaConsumer created successfully. Connected to {kafka_server}")
+        print("KafkaConsumer created successfully. " + f"Connected to {kafka_server}")
 
     except KafkaError as ke:
         print(f"Error creating KafkaConsumer: {ke}")
@@ -56,6 +57,7 @@ def consume_data() -> None:
     print("Consumer is ready and DB initialized...")
 
     recent_prices = {}
+    old_avg_price = 0
 
     while True:
         for message in consumer:
@@ -82,11 +84,14 @@ def consume_data() -> None:
             insert_stock_price(symbol, price, timestamp)
             print(f"Inserted: {symbol}, {price}, {timestamp}")
 
+            avg_price = sum(recent_prices[symbol]) / len(recent_prices[symbol])
+            print(f"Received: Symbol={symbol}, Price={price}, Avg(5)={avg_price:.2f}")
+
             if len(recent_prices[symbol]) > 5:
-                if price < avg_price * 0.95:
+                if price < old_avg_price * 0.95:
                     alert_data = {
                         "symbol": symbol,
-                        "massage": f"Price {price} is 5% below avg {avg_price:.2f}",
+                        "massage": f"Price {price} is 5% below avg {old_avg_price:.2f}",
                         "timestamp": timestamp,
                     }
                     try:
@@ -105,8 +110,7 @@ def consume_data() -> None:
             if len(recent_prices[symbol]) > 5:
                 recent_prices[symbol].pop(0)
 
-            avg_price = sum(recent_prices[symbol]) / len(recent_prices[symbol])
-            print(f"Received: Symbol={symbol}, Price={price}, Avg(5)={avg_price:.2f}")
+            old_avg_price = avg_price
 
 
 if __name__ == "__main__":

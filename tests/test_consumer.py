@@ -117,7 +117,7 @@ class TestConsumer:
                 assert len(alerts) == 0
 
     @patch("consumer.consumer.time.sleep", return_value=None)
-    def test_alert_generation(self, mock_sleep):
+    def test_alert_generation(self, mock_sleep) -> None:
         """
         Test that an alert is generated if a stock price is 5% below the average.
         We'll feed enough messages for an average, then a low price to trigger the alert.
