@@ -1,5 +1,5 @@
 """
-This module fetches stock data from the Tiingo API 
+This module fetches stock data from the Tiingo API
 and produces it to a Kafka topic.
 """
 
