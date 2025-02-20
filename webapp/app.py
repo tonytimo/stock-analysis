@@ -3,7 +3,9 @@ This module contains the Flask app that serves the web interface.
 """
 
 from flask import Flask, Response, jsonify, render_template
-from consumer.db_manager import get_last_stock_alert, init_db, get_recent_stock_prices
+
+from consumer.db_manager import get_last_stock_alert, get_recent_stock_prices, init_db
+
 
 app = Flask(__name__)
 
