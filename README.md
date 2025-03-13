@@ -9,9 +9,6 @@ The application is composed of the following services:
 -   **Producer**: Fetches stock data from the Tingo API and publishes it to a Kafka topic.
 -   **Consumer**: Consumes stock data from the Kafka topic, calculates price averages, and generates alerts when prices drop below a certain threshold. It also stores stock prices and alerts in a SQLite database.
 -   **Webapp**: A Flask-based web application that provides a user interface to visualize real-time stock prices and display the latest stock alerts.
--   **Kafka**: A distributed streaming platform used for building real-time data pipelines and streaming applications.
--   **Zookeeper**: A centralized service for maintaining configuration information, naming, providing distributed synchronization, and providing group services.
-
 
 ## Requirements
 
